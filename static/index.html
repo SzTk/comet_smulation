@@ -1,2 +1,69 @@
 <!DOCTYPE html>
-<html><body><h1>Comet Simulation</h1></body></html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comet Simulation — Dark Matter Halo</title>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.165.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #000; color: #ddd; font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
+    #canvas3d { width: 100%; flex: 1 1 60%; display: block; }
+    #bottom { display: flex; flex: 0 0 280px; border-top: 1px solid #333; }
+    #chartPanel { flex: 1; padding: 8px; position: relative; }
+    #canvasChart { width: 100%; height: 100%; }
+    #controlPanel { width: 280px; padding: 12px; background: #0a0a14; border-left: 1px solid #333; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+    label { font-size: 0.8em; color: #999; }
+    input[type=number], select { width: 100%; background: #1a1a2e; border: 1px solid #444; color: #ddd; padding: 4px 6px; border-radius: 4px; font-size: 0.85em; }
+    #runBtn { background: #2255cc; color: #fff; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
+    #runBtn:disabled { background: #334; cursor: not-allowed; }
+    #progressWrap { background: #111; border-radius: 3px; height: 6px; }
+    #progressBar { background: #2255cc; height: 6px; border-radius: 3px; width: 0%; transition: width 0.2s; }
+    #statusText { font-size: 0.75em; color: #888; min-height: 2em; }
+    .section-title { font-size: 0.75em; color: #667; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+    .legend { display: flex; gap: 12px; font-size: 0.75em; padding: 4px 0; }
+    .legend-dot { width: 12px; height: 3px; display: inline-block; vertical-align: middle; margin-right: 4px; }
+  </style>
+</head>
+<body>
+  <canvas id="canvas3d"></canvas>
+  <div id="bottom">
+    <div id="chartPanel">
+      <canvas id="canvasChart"></canvas>
+    </div>
+    <div id="controlPanel">
+      <div class="section-title">ダークマター (NFW)</div>
+      <label>プリセット</label>
+      <select id="presetSelect"><option value="">カスタム</option></select>
+      <label>ρ₀ (GeV/cm³)</label>
+      <input type="number" id="rho0Input" value="0.3" min="0" step="0.1" />
+      <label>rs (kpc)</label>
+      <input type="number" id="rsInput" value="20" min="1" step="1" />
+
+      <div class="section-title">彗星軌道</div>
+      <label>半長軸 a (AU)</label>
+      <input type="number" id="aInput" value="50000" min="1000" step="1000" />
+      <label>離心率 e</label>
+      <input type="number" id="eccInput" value="0.9999" min="0.9" max="0.99999" step="0.0001" />
+      <label>傾斜角 i (度)</label>
+      <input type="number" id="incInput" value="30" min="0" max="180" step="5" />
+
+      <button id="runBtn">計算実行</button>
+      <div id="progressWrap"><div id="progressBar"></div></div>
+      <div id="statusText"></div>
+
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#ff8800"></span>DM あり</span>
+        <span><span class="legend-dot" style="background:#ffffff"></span>DM なし</span>
+      </div>
+    </div>
+  </div>
+  <script type="module">
+    import { initUI } from "./js/ui.js";
+    initUI();
+  </script>
+</body>
+</html>
