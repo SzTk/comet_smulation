@@ -1,6 +1,9 @@
 // static/js/scene.js
 // Manages the Three.js 3D orbit visualization.
 
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
 let renderer, scene, camera, controls;
 let orbitLineWith, orbitLineWithout;
 const AU_SCALE = 1 / 1000;  // 1 AU → 0.001 scene units (1000 AU = 1 unit)
@@ -21,7 +24,7 @@ export function initScene(canvasEl) {
   );
   camera.position.set(0, 50, 100);
 
-  controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
 
   _addLights();
