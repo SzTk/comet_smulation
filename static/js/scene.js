@@ -66,9 +66,9 @@ function _buildOrbitRing(radiusAU, color) {
   for (let i = 0; i < segments; i++) {
     const angle = (i / segments) * Math.PI * 2;
     pts.push(
-      radiusAU * AU_SCALE * Math.cos(angle),
+      radiusAU * Math.cos(angle),
       0,
-      radiusAU * AU_SCALE * Math.sin(angle)
+      radiusAU * Math.sin(angle)
     );
   }
   const geo = new THREE.BufferGeometry();
@@ -139,7 +139,7 @@ export function drawOrbits(trajectoryWithDM, trajectoryWithoutDM) {
   ));
   const viewDist = maxR * AU_SCALE * 2.5;
   camera.position.set(viewDist * 0.6, viewDist * 0.4, viewDist);
-  camera.far = viewDist * 20;
+  camera.far = Math.max(viewDist * 20, 500);  // always cover outer Oort Cloud (60 scene units)
   camera.updateProjectionMatrix();
   controls.update();
 }
@@ -160,6 +160,7 @@ function _addOortCloud() {
     color: 0x8899cc,
     transparent: true,
     opacity: 0.06,
+    depthWrite: false,
     side: THREE.DoubleSide,
   });
   scene.add(new THREE.Mesh(outerGeo, outerMat));
@@ -176,6 +177,7 @@ function _addOortCloud() {
     color: 0x66aadd,
     transparent: true,
     opacity: 0.10,
+    depthWrite: false,
     side: THREE.DoubleSide,
   });
   const innerTorus = new THREE.Mesh(innerGeo, innerMat);
