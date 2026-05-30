@@ -59,21 +59,40 @@ function _addSun() {
   scene.add(new THREE.Mesh(geo, mat));
 }
 
+function _buildOrbitRing(radiusAU, color) {
+  const segments = 128;
+  const pts = [];
+  for (let i = 0; i < segments; i++) {
+    const angle = (i / segments) * Math.PI * 2;
+    pts.push(
+      radiusAU * AU_SCALE * Math.cos(angle),
+      0,
+      radiusAU * AU_SCALE * Math.sin(angle)
+    );
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+  return new THREE.LineLoop(geo, new THREE.LineBasicMaterial({ color }));
+}
+
 function _addPlanets() {
-  // Jupiter
+  // Jupiter sphere (t=0 position marker)
   const jGeo = new THREE.SphereGeometry(0.8, 16, 16);
   const jMat = new THREE.MeshStandardMaterial({ color: 0xc88b3a });
   const jupiter = new THREE.Mesh(jGeo, jMat);
-  jupiter.position.set(5.2 * AU_SCALE * 1000, 0, 0);  // at t=0
+  jupiter.position.set(5.2 * AU_SCALE * 1000, 0, 0);
   scene.add(jupiter);
 
-  // Saturn
+  // Jupiter orbit ring
+  scene.add(_buildOrbitRing(5.2, 0xc88b3a));
+
+  // Saturn sphere (t=0 position marker)
   const sGeo = new THREE.SphereGeometry(0.6, 16, 16);
   const sMat = new THREE.MeshStandardMaterial({ color: 0xe4d191 });
   const saturn = new THREE.Mesh(sGeo, sMat);
   saturn.position.set(9.54 * AU_SCALE * 1000, 0, 0);
 
-  // Saturn ring
+  // Saturn ring decoration
   const ringGeo = new THREE.RingGeometry(0.9, 1.5, 32);
   const ringMat = new THREE.MeshBasicMaterial({
     color: 0xd4b483,
@@ -83,6 +102,9 @@ function _addPlanets() {
   ring.rotation.x = Math.PI / 3;
   saturn.add(ring);
   scene.add(saturn);
+
+  // Saturn orbit ring
+  scene.add(_buildOrbitRing(9.54, 0xe4d191));
 }
 
 function _addStarField() {
