@@ -30,6 +30,7 @@ export function initScene(canvasEl) {
   _addLights();
   _addSun();
   _addPlanets();
+  _addOortCloud();
   _addStarField();
 
   window.addEventListener("resize", () => {
@@ -150,4 +151,34 @@ function _buildLine(points, color) {
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
   return new THREE.Line(geo, new THREE.LineBasicMaterial({ color }));
+}
+
+function _addOortCloud() {
+  // Outer Oort Cloud — spherical shell (~20,000-100,000 AU, representative radius 60,000 AU)
+  const outerGeo = new THREE.SphereGeometry(60000 * AU_SCALE, 32, 16);
+  const outerMat = new THREE.MeshBasicMaterial({
+    color: 0x8899cc,
+    transparent: true,
+    opacity: 0.06,
+    side: THREE.DoubleSide,
+  });
+  scene.add(new THREE.Mesh(outerGeo, outerMat));
+
+  // Inner Oort Cloud / Hills Cloud — torus/disk shape (~2,000-20,000 AU)
+  // mainRadius=10,000 AU, tubeRadius=8,000 AU → covers 2,000-18,000 AU
+  const innerGeo = new THREE.TorusGeometry(
+    10000 * AU_SCALE,  // main radius
+    8000 * AU_SCALE,   // tube radius
+    16,                // radial segments
+    64                 // tubular segments
+  );
+  const innerMat = new THREE.MeshBasicMaterial({
+    color: 0x66aadd,
+    transparent: true,
+    opacity: 0.10,
+    side: THREE.DoubleSide,
+  });
+  const innerTorus = new THREE.Mesh(innerGeo, innerMat);
+  innerTorus.rotation.x = Math.PI / 2;  // align to x-z orbital plane
+  scene.add(innerTorus);
 }
