@@ -57,6 +57,13 @@
       <label>傾斜角 i (度)</label>
       <input type="number" id="incInput" value="30" min="0" max="180" step="5" />
 
+      <div class="section-title">シミュレーション期間</div>
+      <div id="periodDisplay" style="font-size:0.75em;color:#88aacc;min-height:1.2em;"></div>
+      <label>年数 (年)</label>
+      <input type="number" id="durationYearsInput" min="0" step="1000000" placeholder="自動（1周期）" />
+      <label>周期数</label>
+      <input type="number" id="durationPeriodsInput" min="0" step="0.5" placeholder="自動（1周期）" />
+
       <button id="runBtn">計算実行</button>
       <div id="progressWrap"><div id="progressBar"></div></div>
       <div id="statusText"></div>

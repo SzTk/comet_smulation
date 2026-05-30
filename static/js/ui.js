@@ -18,6 +18,32 @@ export async function initUI() {
   _populatePresets(presets);
   _syncChartWithCurrentParams(presets);
 
+  // --- Period display and duration sync ---
+  let _period = Math.pow(parseFloat(document.getElementById("aInput").value) || 50000, 1.5);
+  _updatePeriodDisplay(_period);
+
+  document.getElementById("aInput").addEventListener("input", () => {
+    const a = parseFloat(document.getElementById("aInput").value) || 50000;
+    _period = Math.pow(a, 1.5);
+    _updatePeriodDisplay(_period);
+    const yVal = parseFloat(document.getElementById("durationYearsInput").value);
+    if (!isNaN(yVal) && yVal > 0) {
+      document.getElementById("durationPeriodsInput").value = (yVal / _period).toFixed(3);
+    }
+  });
+
+  document.getElementById("durationYearsInput").addEventListener("input", () => {
+    const years = parseFloat(document.getElementById("durationYearsInput").value);
+    document.getElementById("durationPeriodsInput").value =
+      (!isNaN(years) && years > 0) ? (years / _period).toFixed(3) : "";
+  });
+
+  document.getElementById("durationPeriodsInput").addEventListener("input", () => {
+    const periods = parseFloat(document.getElementById("durationPeriodsInput").value);
+    document.getElementById("durationYearsInput").value =
+      (!isNaN(periods) && periods > 0) ? Math.round(periods * _period) : "";
+  });
+
   document.getElementById("presetSelect").addEventListener("change", (e) => {
     const preset = presets.find((p) => p.name === e.target.value);
     if (preset) {
@@ -72,10 +98,15 @@ async function _runSimulation(presets) {
   const ecc = parseFloat(document.getElementById("eccInput").value) || 0.9999;
   const inc = parseFloat(document.getElementById("incInput").value) || 0;
 
+  const durationYearsRaw = parseFloat(document.getElementById("durationYearsInput").value);
+  const duration_years = (!isNaN(durationYearsRaw) && durationYearsRaw > 0)
+    ? durationYearsRaw
+    : null;
+
   const payload = {
     dark_matter: { rho0, rs },
     comet: { semi_major_axis_au: a, eccentricity: ecc, inclination_deg: inc },
-    duration_years: null,
+    duration_years,
     timestep_years: Math.max(10, a * 0.002),  // scale timestep with orbit size
     n_output_points: 5000,
   };
@@ -106,4 +137,9 @@ async function _runSimulation(presets) {
       runBtn.disabled = false;
     }
   );
+}
+
+function _updatePeriodDisplay(periodYears) {
+  const periodM = (periodYears / 1e6).toFixed(2);
+  document.getElementById("periodDisplay").textContent = `軌道周期: ${periodM}M年`;
 }
