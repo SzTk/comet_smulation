@@ -58,6 +58,7 @@ async def _decode_google_jwt(token: str) -> dict[str, Any]:
 async def require_authorized_user(
     authorization: Optional[str] = Header(None),
     x_ms_token_google_id_token: Optional[str] = Header(None),
+    x_ms_client_principal_name: Optional[str] = Header(None),
 ) -> Optional[str]:
     """FastAPI dependency. Returns verified email, or None when auth is disabled."""
     if not settings.auth_enabled:
@@ -69,31 +70,36 @@ async def require_authorized_user(
     elif x_ms_token_google_id_token:
         token = x_ms_token_google_id_token
 
-    if not token:
-        raise HTTPException(
-            status_code=401,
-            detail={"error": "Unauthorized", "message": "Authentication required"},
-        )
+    if token:
+        try:
+            claims = await _decode_google_jwt(token)
+        except JWTError:
+            raise HTTPException(
+                status_code=401,
+                detail={"error": "Unauthorized", "message": "Invalid or expired token"},
+            )
 
-    try:
-        claims = await _decode_google_jwt(token)
-    except JWTError:
-        raise HTTPException(
-            status_code=401,
-            detail={"error": "Unauthorized", "message": "Invalid or expired token"},
-        )
+        if not claims.get("email_verified", False):
+            raise HTTPException(
+                status_code=401,
+                detail={"error": "Unauthorized", "message": "Email not verified"},
+            )
 
-    if not claims.get("email_verified", False):
-        raise HTTPException(
-            status_code=401,
-            detail={"error": "Unauthorized", "message": "Email not verified"},
-        )
+        email: str = claims.get("email", "")
+        if email not in settings.allowed_emails:
+            raise HTTPException(
+                status_code=403,
+                detail={"error": "Forbidden", "message": "Email not authorized"},
+            )
 
-    email: str = claims.get("email", "")
-    if email not in settings.allowed_emails:
-        raise HTTPException(
-            status_code=403,
-            detail={"error": "Forbidden", "message": "Email not authorized"},
-        )
+        return email
 
-    return email
+    # Fallback: trust X-MS-CLIENT-PRINCIPAL-NAME injected by Easy Auth.
+    # Azure sanitizes this header (client-supplied value is stripped before reaching the app).
+    if x_ms_client_principal_name and x_ms_client_principal_name in settings.allowed_emails:
+        return x_ms_client_principal_name
+
+    raise HTTPException(
+        status_code=401,
+        detail={"error": "Unauthorized", "message": "Authentication required"},
+    )

@@ -63,6 +63,11 @@ export async function startSimulation(payload, onProgress, onResult, onError) {
 }
 
 export async function fetchPresets() {
-    const resp = await fetch("/presets", { headers: await _authHeaders() });
+    let resp = await fetch("/presets", { headers: await _authHeaders() });
+    if (resp.status === 401) {
+        clearTokenCache();
+        resp = await fetch("/presets", { headers: await _authHeaders() });
+    }
+    if (!resp.ok) return [];
     return resp.json();
 }

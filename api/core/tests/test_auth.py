@@ -81,6 +81,16 @@ class TestAuthEnabled:
         assert resp.json()["detail"]["error"] == "Forbidden"
 
 
+    def test_principal_name_fallback_returns_email(self):
+        resp = _client.get("/protected", headers={"X-Ms-Client-Principal-Name": _ALLOWED_EMAIL})
+        assert resp.status_code == 200
+        assert resp.json()["email"] == _ALLOWED_EMAIL
+
+    def test_disallowed_principal_name_returns_401(self):
+        resp = _client.get("/protected", headers={"X-Ms-Client-Principal-Name": "attacker@example.com"})
+        assert resp.status_code == 401
+
+
 class TestAuthDisabled:
     def test_no_token_returns_200_and_email_is_none(self):
         # auth_enabled defaults to False in Settings
