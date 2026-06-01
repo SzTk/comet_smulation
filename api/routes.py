@@ -1,10 +1,12 @@
 import asyncio
 import json
 import uuid
-from fastapi import APIRouter, HTTPException
+from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from api.core.auth import require_authorized_user
 from physics.simulation import SimulationParams, run_simulation
 
 router = APIRouter()
@@ -47,12 +49,15 @@ def health():
 
 
 @router.get("/presets")
-def get_presets():
+def get_presets(email: Optional[str] = Depends(require_authorized_user)):
     return PRESETS
 
 
 @router.post("/simulate")
-async def start_simulation(req: SimulateRequest):
+async def start_simulation(
+    req: SimulateRequest,
+    email: Optional[str] = Depends(require_authorized_user),
+):
     job_id = str(uuid.uuid4())
     queue: asyncio.Queue = asyncio.Queue()
     _jobs[job_id] = queue
