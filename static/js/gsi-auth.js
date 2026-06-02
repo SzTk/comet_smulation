@@ -1,4 +1,4 @@
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "626791226729-1416lcfn9j6ihv2tbn7el0t20abbkhod.apps.googleusercontent.com";
 
 let _idToken = null;
 let _tokenExpiry = 0;
